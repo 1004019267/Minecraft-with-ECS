@@ -52,7 +52,7 @@ public class GameSetting : MonoBehaviour
 
     int random;
 
-    ColliderPool colPool;
+    public ColliderPool colPool;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Initialize()
@@ -153,7 +153,7 @@ public class GameSetting : MonoBehaviour
 
                     if (!airChecker)
                     {
-                        CreatePrefab(x, y, z, meshTemp, maTemp);
+                        CreatePrefab(x, y, z ,meshTemp, maTemp, new BlockTag { });
                     }
                 }
             }
@@ -175,7 +175,7 @@ public class GameSetting : MonoBehaviour
                 maTemp = woodMat;
             }
 
-            CreatePrefab(x, i, z, blockMesh, maTemp);
+            CreatePrefab(x, i, z, blockMesh, maTemp, new BlockTag { });
 
             //树叶 就是个正方形
             if (i >= y + 3 && i <= y + 6)
@@ -185,9 +185,9 @@ public class GameSetting : MonoBehaviour
                     for (int k = z - 1; k <= z + 1; k++)
                     {
                         //不能随机到躯干
-                        if ( j != x||k != z)
+                        if (j != x || k != z)
                         {
-                            CreatePrefab(j, i, k, blockMesh, leavesMat);
+                            CreatePrefab(j, i, k, blockMesh, leavesMat, new BlockTag { });
                         }
 
                     }
@@ -209,7 +209,7 @@ public class GameSetting : MonoBehaviour
 
         }
 
-        CreatePrefab(x, y, z, tallGrassMesh, maTemp, (entities) => { manager.AddComponentData(entities, new Rotation { Value = Quaternion.Euler(0, 45, 0) }); });
+        CreatePrefab(x, y, z, tallGrassMesh, maTemp, new SurfacePlantTag { },false,(entities) => { manager.AddComponentData(entities, new Rotation { Value = Quaternion.Euler(0, 45, 0) }); });
     }
 
     void CloudGenerator(int x, int y, int z)
@@ -221,19 +221,21 @@ public class GameSetting : MonoBehaviour
         {
             for (int j = 0; j < random; j++)
             {
-                CreatePrefab(x + i, y + 15, z + j, blockMesh, CloudMat);
+                CreatePrefab(x + i, y + 15, z + j, blockMesh, CloudMat,new BlockTag { },false);
             }
         }
     }
 
     delegate void CreateFunc(Entity entities);
 
-    void CreatePrefab(int x, int y, int z, Mesh mesh, Material ma, CreateFunc func = null)
+    void CreatePrefab<T>(int x, int y, int z, Mesh mesh, Material ma,T componentData ,bool isCollider=true,CreateFunc func = null)where T :struct,IComponentData
     {
+        if(isCollider)
         AddCollider(new Vector3(x, y, z));
+
         Entity entities = manager.CreateEntity(blockArchetype);
         manager.SetComponentData(entities, new Position { Value = new int3(x, y, z) });
-        //manager.AddComponentData(entities, new BlockTag { });
+        manager.AddComponentData(entities, componentData);
 
         //找不到是粉色方块
         if (!maTemp)

@@ -11,7 +11,7 @@ using Unity.Rendering;
 /// </summary>
 public class SpawnNumBlocks : MonoBehaviour
 {
-    public Texture2D heightmap;
+    Texture2D heightmap;
 
     public static EntityArchetype blockArchetype;
 
